@@ -70,11 +70,13 @@ int main() {
 
     int selectedCell[2] = {-1, -1};
     if(isAI){
+      printf("AI phase\n");
       //sugoiAlgorithm();
       isAI = !isAI;
       isFirst = !isFirst;
     } else {
       inputCell(selectedCell);
+      printf("select: %d, %d\n", selectedCell[0], selectedCell[1]);
       if (canPut(selectedCell, enableCells)) { // 置けない場所を選択していたらisAIフラグを変えずにもう一回ループしてもらう
         isAI = !isAI;
         isFirst = !isFirst;
@@ -95,21 +97,18 @@ void getEnableCells(bool isFirst, Cell board[HIGHT][WIDTH], int enableCells[64][
 
 bool existEnableCells(int enableCells[64][2]) {
   // TODO: 置ける場所が存在したらtrue
-  return false;
+  return true;
 }
 
 bool fillBoard(Cell board[HIGHT][WIDTH]) {
   // TODO: ボードが埋まっていたらtrue
-  /*for (int y=0; y < HIGHT; y++) {
+  for (int y=0; y < HIGHT; y++) {
     for(int x=0; x < WIDTH ; x++) {
-      if(board[x][y] == Blank) {
-        return false;
-      }else if(y == HIGHT-1 && x == WIDTH-1) {
+      if (board[x][y] != Blank)
         return true;
-      }
     }
-  }*/
-  return true;
+  }
+  return false;
 }
 
 void finishGame(Cell board[HIGHT][WIDTH]) {
@@ -162,8 +161,21 @@ bool isOneColor(Cell board[HIGHT][WIDTH]) {
 void inputCell(int selectedCell[2]){
   // TODO: ユーザから標準入力でcellのindexを受け取る
   // e.g. (3, b)を選択したなら[4, 3]
-  selectedCell[0] = 4;
-  selectedCell[1] = 3;
+  
+  // ,つなぎで2つの数値を入力
+  // 入力後分割とキャスト
+  
+  char input[20];
+  printf("置く場所を入力：");
+  fgets(input,20,stdin);
+  
+  char *in;
+  
+  in = strtok(input, ",");
+  selectedCell[0] = atoi(in) - 1;
+  
+  in = strtok(NULL, ",");
+  selectedCell[1] = atoi(in);
 }
 
 bool canPut(int selectedCell[2], int enableCells[64][2]) {
