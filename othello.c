@@ -100,16 +100,63 @@ bool existEnableCells(int enableCells[64][2]) {
 
 bool fillBoard(Cell board[HIGHT][WIDTH]) {
   // TODO: ボードが埋まっていたらtrue
+  /*for (int y=0; y < HIGHT; y++) {
+    for(int x=0; x < WIDTH ; x++) {
+      if(board[x][y] == Blank) {
+        return false;
+      }else if(y == HIGHT-1 && x == WIDTH-1) {
+        return true;
+      }
+    }
+  }*/
   return true;
 }
 
 void finishGame(Cell board[HIGHT][WIDTH]) {
   // TODO: ゲームの勝敗判定を行う
+/*  int countblack = 0, countwhite = 0;
+  for (int y=0; y < HIGHT; y++) {
+    for(int x=0; x < WIDTH ; x++) {
+      switch (board[x][y]) {
+	case Black:
+	  countblack++;
+	  break;
+	case White:
+	  countwhite++;
+	  break;
+	default:
+	  break;
+      }
+    }
+  }
+	
+  printf("o:%d\n",countwhite);
+  printf("x:%d\n",countblack);
+  if(countwhite > countblack) {
+    printf("winner:o");
+  } else if (countwhite < countblack) {
+    printf("winner:x");
+  } else {
+    printf("draw");
+  }*/
 }
 
 bool isOneColor(Cell board[HIGHT][WIDTH]) {
   // TODO: cellが一色だけのときtrue
-  return true;
+  enum Cell color = Blank;
+  for (int y=0; y < HIGHT; y++) {
+    for(int x=0; x < WIDTH ; x++) {
+      if(board[x][y]!=Blank) {
+        if(color == Blank) {
+          color = board[x][y];
+    	} else if(board[x][y]!=color) {
+          return false;
+        }
+      }
+    if(y == HIGHT-1 && x == WIDTH-1)
+      return true;
+    }
+  }
 }
 
 void inputCell(int selectedCell[2]){
@@ -121,11 +168,43 @@ void inputCell(int selectedCell[2]){
 
 bool canPut(int selectedCell[2], int enableCells[64][2]) {
   // TODO: enableCellsにselectedCellが含まれていたらtrue
-  return true;
+  for(int i=0;i<64;i++) {
+    if(selectedCell[0]==enableCells[i][0] && selectedCell[1]==enableCells[i][1]) {
+      return true;
+      break;
+    } else if(i == 64-1) {
+      return false;
+    }
+  }
 }
 
 void reverse(bool isFirst, int selectedCell[2], Cell board[HIGHT][WIDTH]) {
   // TODO: selectedCellの場所に置き、boardを更新する
+  //未完成
+  int x = selectedCell[0], y = selectedCell[1];
+  //board[x][y] = ;
+  enum Cell cellcolor = board[x][y];
+  int nextcell[8][2] = { {-1,-1},{-1,0},{-1,1},
+			 {0,-1},        {0,1},
+			 {1,-1},{1,0},{1,1}};
+  for(int a = 0; a < 8; a++) {
+    int x2 = x+nextcell[a][0] , y2 = y+nextcell[a][1];
+    //if(座標[x2][y2]が盤面の中かの判定){
+      if(board[x2][y2] != Blank && board[x2][y2] != cellcolor) {
+        for(int i = 0; i < 6; i++) {
+          x2 += nextcell[a][0];
+  	  y2 += nextcell[a][1];
+	  //if(座標[x2][y2]が盤面の中かの判定){
+  	  if(board[x2][y2] == cellcolor) {
+  	    for(int j = 0; j < i+1 ; j++) {
+              x2 -= nextcell[a][0];
+              y2 -= nextcell[a][0];
+              board[x2][y2] = cellcolor;
+  	    }
+  	  }
+       }
+    }
+  }
 }
 
 void displayBoard(Cell board[HIGHT][WIDTH]) {
