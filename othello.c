@@ -49,7 +49,7 @@ int main() {
     // enableCellsの初期化
     for (int i = 0; i < 64; i++) {
       for(int j = 0; j < 2; j++) {
-        enableCells[i][j] = 0; 
+        enableCells[i][j] = -1; 
       }
     }
     getEnableCells(isFirst, board, enableCells);
