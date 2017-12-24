@@ -78,12 +78,13 @@ int main() {
       isAI = !isAI;
       isFirst = !isFirst;
     } else {
+      printf("human phase\n");
       inputCell(selectedCell);
       //printf("select: %d, %d\n", selectedCell[0], selectedCell[1]);
       if (canPut(selectedCell, enableCells)) { // 置けない場所を選択していたらisAIフラグを変えずにもう一回ループしてもらう
         isAI = !isAI;
         isFirst = !isFirst;
-      } 
+      }
     }
 
     reverse(isFirst, selectedCell, board);
@@ -222,6 +223,7 @@ bool isOneColor(Cell board[HIGHT][WIDTH]) {
   }
 }
 
+// kitagawa
 void inputCell(int selectedCell[2]){
   // TODO: ユーザから標準入力でcellのindexを受け取る
   // e.g. (3, b)を選択したなら[4, 3]
@@ -230,16 +232,18 @@ void inputCell(int selectedCell[2]){
   // 入力後分割とキャスト
   
   char input[20];
-  printf("置く場所を入力：");
+  printf(" 置く場所を入力\n e.g. 4,c\n input:");
   fgets(input,20,stdin);
   
   char *in;
   
   in = strtok(input, ",");
-  selectedCell[0] = atoi(in) - 1;
+  selectedCell[1] = atoi(in) - 1;
   
   in = strtok(NULL, ",");
-  selectedCell[1] = atoi(in);
+  selectedCell[0] = *in - 'a';
+
+  printf("intput %d, %d\n", selectedCell[0], selectedCell[1]);
 }
 
 bool canPut(int selectedCell[2], bool enableCells[WIDTH][HIGHT]) {
@@ -247,31 +251,44 @@ bool canPut(int selectedCell[2], bool enableCells[WIDTH][HIGHT]) {
   return enableCells[selectedCell[0]][selectedCell[1]];
 }
 
+// nakagawa
 void reverse(bool isFirst, int selectedCell[2], Cell board[HIGHT][WIDTH]) {
   // TODO: selectedCellの場所に置き、boardを更新する
-  //未完成
   int x = selectedCell[0], y = selectedCell[1];
-  //board[x][y] = ;
+
+  printf("reverse %d, %d\n", x, y);
+  board[x][y] = 0;
+  if(isFirst) {
+    board[x][y] = Black;
+  } else {
+    board[x][y] = White;
+  }
   enum Cell cellcolor = board[x][y];
-  int nextcell[8][2] = { {-1,-1},{-1,0},{-1,1},
-			 {0,-1},        {0,1},
-			 {1,-1},{1,0},{1,1}};
+  int nextcell[8][2] = {
+    {-1,-1},{-1,0},{-1,1},
+    {0,-1},{0,1},
+    {1,-1},{1,0},{1,1}
+  };
   for(int a = 0; a < 8; a++) {
     int x2 = x+nextcell[a][0] , y2 = y+nextcell[a][1];
-    //if(座標[x2][y2]が盤面の中かの判定){
+    if(x2 < 0 || x2 > 7 || y2 < 0 || y2 > 7){
       if(board[x2][y2] != Blank && board[x2][y2] != cellcolor) {
         for(int i = 0; i < 6; i++) {
           x2 += nextcell[a][0];
-  	  y2 += nextcell[a][1];
-	  //if(座標[x2][y2]が盤面の中かの判定){
-  	  if(board[x2][y2] == cellcolor) {
-  	    for(int j = 0; j < i+1 ; j++) {
-              x2 -= nextcell[a][0];
-              y2 -= nextcell[a][0];
-              board[x2][y2] = cellcolor;
-  	    }
-  	  }
-       }
+          y2 += nextcell[a][1];
+	  if(x2 < 0 || x2 > 7 || y2 < 0 || y2 > 7){
+  	    if(board[x2][y2] == Blank) {
+	      break;
+	    }else if(board[x2][y2] == cellcolor) {
+  	      for(int j = 0; j < i+1 ; j++) {
+                x2 -= nextcell[a][0];
+                y2 -= nextcell[a][1];
+                board[x2][y2] = cellcolor;
+  	      }
+            }
+          }
+        }
+      }
     }
   }
 }
