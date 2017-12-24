@@ -11,8 +11,8 @@ typedef enum Cell {
   White,
 } Cell;
 
-void getEnableCells(bool, Cell[HIGHT][WIDTH], int[64][2]);
-bool existEnableCells(int[64][2]);
+void getEnableCells(bool, Cell[HIGHT][WIDTH], bool[HIGHT][WIDTH]);
+bool existEnableCells(bool[WIDTH][HIGHT]);
 bool canPutLine(bool, int[2], int, Cell[HIGHT][WIDTH]);
 void add(int[2], int[2]);
 bool go(bool, int[2], int, Cell[HIGHT][WIDTH], bool);
@@ -20,7 +20,7 @@ bool fillBoard(Cell[HIGHT][WIDTH]);
 void finishGame(Cell[HIGHT][WIDTH]);
 bool isOneColor(Cell[HIGHT][WIDTH]);
 void inputCell(int[2]);
-bool canPut(int[2], int[64][2]);
+bool canPut(int[2], bool[WIDTH][HIGHT]);
 void reverse(bool, int[2], Cell[HIGHT][WIDTH]);
 void displayBoard(Cell[HIGHT][WIDTH]);
 
@@ -39,13 +39,7 @@ int main() {
 
   // 初期状態の表示
   displayBoard(board);
-
-  int selectedCell[2] = {5, 5};
-  bool hoge = canPutLine(true, selectedCell, 0, board);
-  printf("%d", hoge);
-
-
-  /*
+  
   // TODO: 先行後攻の選択の処理
   bool isFirst = true;
   bool isAI = true;
@@ -54,11 +48,11 @@ int main() {
   }
 
   while(true) {
-    int enableCells[64][2];
+    bool enableCells[WIDTH][HIGHT];
     // enableCellsの初期化
-    for (int i = 0; i < 64; i++) {
-      for(int j = 0; j < 2; j++) {
-        enableCells[i][j] = -1; 
+    for (int x=0; x<WIDTH; x++) {
+      for (int y=0; y<HIGHT; y++) {
+        enableCells[x][y] = false; 
       }
     }
     getEnableCells(isFirst, board, enableCells);
@@ -85,7 +79,7 @@ int main() {
       isFirst = !isFirst;
     } else {
       inputCell(selectedCell);
-      printf("select: %d, %d\n", selectedCell[0], selectedCell[1]);
+      //printf("select: %d, %d\n", selectedCell[0], selectedCell[1]);
       if (canPut(selectedCell, enableCells)) { // 置けない場所を選択していたらisAIフラグを変えずにもう一回ループしてもらう
         isAI = !isAI;
         isFirst = !isFirst;
@@ -95,14 +89,23 @@ int main() {
     reverse(isFirst, selectedCell, board);
     displayBoard(board);
   }
-  */
 
   return 0;
 }
 
-void getEnableCells(bool isFirst, Cell board[HIGHT][WIDTH], int enableCells[64][2]) {
+void getEnableCells(bool isFirst, Cell board[HIGHT][WIDTH], bool enableCells[WIDTH][HIGHT]) {
   // TODO: 置くことのできるcellのindexを返す
   // e.g. (1, a), (2, d) のマスが置けるなら[[2, 0], [3, 3]]
+  for (int x=0; x<WIDTH; x++) {
+    for (int y=0; y<HIGHT; y++) {
+      int selectedCell[2] = {x, y};
+      for(int i=0; i<8; i++) {
+        if (canPutLine(isFirst, selectedCell, i, board)) {
+          enableCells[x][y] = true;
+        }
+      } 
+    }
+  }
 }
 
 bool canPutLine(bool isFirst, int selectedCell[2], int directionIndex, Cell board[HIGHT][WIDTH]) {
@@ -149,9 +152,16 @@ void add(int target[2], int a[2]) {
   target[1] = target[1] + a[1];
 }
 
-bool existEnableCells(int enableCells[64][2]) {
+bool existEnableCells(bool enableCells[WIDTH][HIGHT]) {
   // TODO: 置ける場所が存在したらtrue
-  return true;
+  for (int x=0; x<WIDTH; x++) {
+    for (int y=0; y<HIGHT; y++) {
+      if (enableCells[x][y]) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 bool fillBoard(Cell board[HIGHT][WIDTH]) {
@@ -232,16 +242,9 @@ void inputCell(int selectedCell[2]){
   selectedCell[1] = atoi(in);
 }
 
-bool canPut(int selectedCell[2], int enableCells[64][2]) {
+bool canPut(int selectedCell[2], bool enableCells[WIDTH][HIGHT]) {
   // TODO: enableCellsにselectedCellが含まれていたらtrue
-  for(int i=0;i<64;i++) {
-    if(selectedCell[0]==enableCells[i][0] && selectedCell[1]==enableCells[i][1]) {
-      return true;
-      break;
-    } else if(i == 64-1) {
-      return false;
-    }
-  }
+  return enableCells[selectedCell[0]][selectedCell[1]];
 }
 
 void reverse(bool isFirst, int selectedCell[2], Cell board[HIGHT][WIDTH]) {
@@ -276,8 +279,7 @@ void reverse(bool isFirst, int selectedCell[2], Cell board[HIGHT][WIDTH]) {
 void displayBoard(Cell board[HIGHT][WIDTH]) {
   printf("   ");
   for(int i = 0; i < WIDTH; i++){
-    //printf("%c ", 'a' + i);
-    printf("%d ", i);
+    printf("%c ", 'a' + i);
   }
   printf("\n");
 
