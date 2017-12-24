@@ -13,6 +13,9 @@ typedef enum Cell {
 
 void getEnableCells(bool, Cell[HIGHT][WIDTH], int[64][2]);
 bool existEnableCells(int[64][2]);
+bool canPutLine(bool, int[2], int, Cell[HIGHT][WIDTH]);
+void add(int[2], int[2]);
+bool go(bool, int[2], int, Cell[HIGHT][WIDTH], bool);
 bool fillBoard(Cell[HIGHT][WIDTH]);
 void finishGame(Cell[HIGHT][WIDTH]);
 bool isOneColor(Cell[HIGHT][WIDTH]);
@@ -37,6 +40,12 @@ int main() {
   // 初期状態の表示
   displayBoard(board);
 
+  int selectedCell[2] = {5, 5};
+  bool hoge = canPutLine(true, selectedCell, 0, board);
+  printf("%d", hoge);
+
+
+  /*
   // TODO: 先行後攻の選択の処理
   bool isFirst = true;
   bool isAI = true;
@@ -86,6 +95,7 @@ int main() {
     reverse(isFirst, selectedCell, board);
     displayBoard(board);
   }
+  */
 
   return 0;
 }
@@ -93,6 +103,50 @@ int main() {
 void getEnableCells(bool isFirst, Cell board[HIGHT][WIDTH], int enableCells[64][2]) {
   // TODO: 置くことのできるcellのindexを返す
   // e.g. (1, a), (2, d) のマスが置けるなら[[2, 0], [3, 3]]
+}
+
+bool canPutLine(bool isFirst, int selectedCell[2], int directionIndex, Cell board[HIGHT][WIDTH]) {
+  return go(isFirst, selectedCell, directionIndex, board, false);
+}
+
+bool go(bool isFirst, int selectedCell[2], int directionIndex, Cell board[HIGHT][WIDTH],
+    bool flag) {
+  int directions[8][2] = {
+    {-1,-1}, {0,-1}, {1,-1},
+    {-1, 0}, {1, 0},
+    {-1,1}, {0,1}, {1,1}
+  };
+  
+  int tmp[2] = {selectedCell[0], selectedCell[1]};
+  if (tmp[0] <= -1 || tmp[1] <= -1) {
+    // 端まで行った 
+    return false;
+  }
+  add(tmp, directions[directionIndex]);
+
+  // printf("%d, %d\n", tmp[0], tmp[1]);
+
+  if (board[tmp[0]][tmp[1]] != isFirst && !flag) {
+    // 置けているとき
+    return go(isFirst, tmp, directionIndex, board, true);
+  } else if (board[tmp[0]][tmp[1]] == isFirst && !flag) {
+    // 横が同じ色だったとき 
+    return false;
+  } else if (board[tmp[0]][tmp[1]] == Blank) {
+    // 途中までおkだったけど、Blankになった
+    return false;
+  } else if (board[tmp[0]][tmp[1]] == isFirst && flag) {
+    // 挟んだとき
+    return true;
+  }
+  return go(isFirst, tmp, directionIndex, board, false);
+}
+
+void add(int target[2], int a[2]) {
+  // printf("add x: %d + %d\n", target[0], a[0]);
+  // printf("add y: %d + %d\n", target[1], a[1]);
+  target[0] = target[0] + a[0];
+  target[1] = target[1] + a[1];
 }
 
 bool existEnableCells(int enableCells[64][2]) {
@@ -222,10 +276,10 @@ void reverse(bool isFirst, int selectedCell[2], Cell board[HIGHT][WIDTH]) {
 void displayBoard(Cell board[HIGHT][WIDTH]) {
   printf("   ");
   for(int i = 0; i < WIDTH; i++){
-    printf("%c ", 'a' + i);
+    //printf("%c ", 'a' + i);
+    printf("%d ", i);
   }
   printf("\n");
-
 
   for (int y=0; y < HIGHT; y++) {
     printf(" %d ", y+1);
