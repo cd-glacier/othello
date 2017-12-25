@@ -87,7 +87,7 @@ int main() {
       }
     }
 
-    reverse(isFirst, selectedCell, board);
+    reverse(!isFirst, selectedCell, board);
     displayBoard(board);
   }
 
@@ -102,6 +102,7 @@ void getEnableCells(bool isFirst, Cell board[HIGHT][WIDTH], bool enableCells[WID
       int selectedCell[2] = {x, y};
       for(int i=0; i<8; i++) {
         if (canPutLine(isFirst, selectedCell, i, board)) {
+          printf("(%d, %d) ", x, y);
           enableCells[x][y] = true;
         }
       } 
@@ -122,12 +123,15 @@ bool go(bool isFirst, int selectedCell[2], int directionIndex, Cell board[HIGHT]
   };
   
   int tmp[2] = {selectedCell[0], selectedCell[1]};
-  if (tmp[0] <= -1 || tmp[1] <= -1) {
+  add(tmp, directions[directionIndex]);
+  
+  if (tmp[0] <= -1 || tmp[1] <= -1 || tmp[0] > WIDTH || tmp[1] > HIGHT) {
     // 端まで行った 
     return false;
+  } else if (board[tmp[0]][tmp[1]] == Blank) {
+    // 横がBlank
+    return false;
   }
-  add(tmp, directions[directionIndex]);
-
   // printf("%d, %d\n", tmp[0], tmp[1]);
 
   if (board[tmp[0]][tmp[1]] != isFirst && !flag) {
@@ -136,10 +140,7 @@ bool go(bool isFirst, int selectedCell[2], int directionIndex, Cell board[HIGHT]
   } else if (board[tmp[0]][tmp[1]] == isFirst && !flag) {
     // 横が同じ色だったとき 
     return false;
-  } else if (board[tmp[0]][tmp[1]] == Blank) {
-    // 途中までおkだったけど、Blankになった
-    return false;
-  } else if (board[tmp[0]][tmp[1]] == isFirst && flag) {
+  }  else if (board[tmp[0]][tmp[1]] == isFirst && flag) {
     // 挟んだとき
     return true;
   }
@@ -170,15 +171,15 @@ bool fillBoard(Cell board[HIGHT][WIDTH]) {
   for (int y=0; y < HIGHT; y++) {
     for(int x=0; x < WIDTH ; x++) {
       if (board[x][y] != Blank)
-        return true;
+        return false;
     }
   }
-  return false;
+  return true;
 }
 
 void finishGame(Cell board[HIGHT][WIDTH]) {
   // TODO: ゲームの勝敗判定を行う
-/*  int countblack = 0, countwhite = 0;
+  int countblack = 0, countwhite = 0;
   for (int y=0; y < HIGHT; y++) {
     for(int x=0; x < WIDTH ; x++) {
       switch (board[x][y]) {
@@ -202,7 +203,7 @@ void finishGame(Cell board[HIGHT][WIDTH]) {
     printf("winner:x");
   } else {
     printf("draw");
-  }*/
+  }
 }
 
 bool isOneColor(Cell board[HIGHT][WIDTH]) {
@@ -243,7 +244,7 @@ void inputCell(int selectedCell[2]){
   in = strtok(NULL, ",");
   selectedCell[0] = *in - 'a';
 
-  printf("intput %d, %d\n", selectedCell[0], selectedCell[1]);
+  //printf("intput %d, %d\n", selectedCell[0], selectedCell[1]);
 }
 
 bool canPut(int selectedCell[2], bool enableCells[WIDTH][HIGHT]) {
@@ -255,8 +256,6 @@ bool canPut(int selectedCell[2], bool enableCells[WIDTH][HIGHT]) {
 void reverse(bool isFirst, int selectedCell[2], Cell board[HIGHT][WIDTH]) {
   // TODO: selectedCellの場所に置き、boardを更新する
   int x = selectedCell[0], y = selectedCell[1];
-
-  printf("reverse %d, %d\n", x, y);
   board[x][y] = 0;
   if(isFirst) {
     board[x][y] = Black;
@@ -264,11 +263,9 @@ void reverse(bool isFirst, int selectedCell[2], Cell board[HIGHT][WIDTH]) {
     board[x][y] = White;
   }
   enum Cell cellcolor = board[x][y];
-  int nextcell[8][2] = {
-    {-1,-1},{-1,0},{-1,1},
-    {0,-1},{0,1},
-    {1,-1},{1,0},{1,1}
-  };
+  int nextcell[8][2] = { {-1,-1},{-1,0},{-1,1},
+    {0,-1},        {0,1},
+    {1,-1},{1,0},{1,1}};
   for(int a = 0; a < 8; a++) {
     int x2 = x+nextcell[a][0] , y2 = y+nextcell[a][1];
     if(x2 < 0 || x2 > 7 || y2 < 0 || y2 > 7){
@@ -276,15 +273,15 @@ void reverse(bool isFirst, int selectedCell[2], Cell board[HIGHT][WIDTH]) {
         for(int i = 0; i < 6; i++) {
           x2 += nextcell[a][0];
           y2 += nextcell[a][1];
-	  if(x2 < 0 || x2 > 7 || y2 < 0 || y2 > 7){
-  	    if(board[x2][y2] == Blank) {
-	      break;
-	    }else if(board[x2][y2] == cellcolor) {
-  	      for(int j = 0; j < i+1 ; j++) {
+          if(x2 < 0 || x2 > 7 || y2 < 0 || y2 > 7){
+            if(board[x2][y2] == Blank) {
+              break;
+            }else if(board[x2][y2] == cellcolor) {
+              for(int j = 0; j < i+1 ; j++) {
                 x2 -= nextcell[a][0];
                 y2 -= nextcell[a][1];
                 board[x2][y2] = cellcolor;
-  	      }
+              }
             }
           }
         }
