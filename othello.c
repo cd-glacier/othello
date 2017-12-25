@@ -95,8 +95,7 @@ int main() {
 }
 
 void getEnableCells(bool isFirst, Cell board[HIGHT][WIDTH], bool enableCells[WIDTH][HIGHT]) {
-  // TODO: 置くことのできるcellのindexを返す
-  // e.g. (1, a), (2, d) のマスが置けるなら[[2, 0], [3, 3]]
+  // 置くことのできるcellのindexを返す
   for (int x=0; x<WIDTH; x++) {
     for (int y=0; y<HIGHT; y++) {
       int selectedCell[2] = {x, y};
@@ -155,7 +154,7 @@ void add(int target[2], int a[2]) {
 }
 
 bool existEnableCells(bool enableCells[WIDTH][HIGHT]) {
-  // TODO: 置ける場所が存在したらtrue
+  // 置ける場所が存在したらtrue
   for (int x=0; x<WIDTH; x++) {
     for (int y=0; y<HIGHT; y++) {
       if (enableCells[x][y]) {
@@ -167,7 +166,7 @@ bool existEnableCells(bool enableCells[WIDTH][HIGHT]) {
 }
 
 bool fillBoard(Cell board[HIGHT][WIDTH]) {
-  // TODO: ボードが埋まっていたらtrue
+  // ボードが埋まっていたらtrue
   for (int y=0; y < HIGHT; y++) {
     for(int x=0; x < WIDTH ; x++) {
       if (board[x][y] != Blank)
@@ -178,7 +177,7 @@ bool fillBoard(Cell board[HIGHT][WIDTH]) {
 }
 
 void finishGame(Cell board[HIGHT][WIDTH]) {
-  // TODO: ゲームの勝敗判定を行う
+  // ゲームの勝敗判定を行う
   int countblack = 0, countwhite = 0;
   for (int y=0; y < HIGHT; y++) {
     for(int x=0; x < WIDTH ; x++) {
@@ -207,7 +206,7 @@ void finishGame(Cell board[HIGHT][WIDTH]) {
 }
 
 bool isOneColor(Cell board[HIGHT][WIDTH]) {
-  // TODO: cellが一色だけのときtrue
+  // cellが一色だけのときtrue
   enum Cell color = Blank;
   for (int y=0; y < HIGHT; y++) {
     for(int x=0; x < WIDTH ; x++) {
@@ -226,7 +225,7 @@ bool isOneColor(Cell board[HIGHT][WIDTH]) {
 
 // kitagawa
 void inputCell(int selectedCell[2]){
-  // TODO: ユーザから標準入力でcellのindexを受け取る
+  // ユーザから標準入力でcellのindexを受け取る
   // e.g. (3, b)を選択したなら[4, 3]
   
   // ,つなぎで2つの数値を入力
@@ -248,13 +247,13 @@ void inputCell(int selectedCell[2]){
 }
 
 bool canPut(int selectedCell[2], bool enableCells[WIDTH][HIGHT]) {
-  // TODO: enableCellsにselectedCellが含まれていたらtrue
+  // enableCellsにselectedCellが含まれていたらtrue
   return enableCells[selectedCell[0]][selectedCell[1]];
 }
 
 // nakagawa
 void reverse(bool isFirst, int selectedCell[2], Cell board[HIGHT][WIDTH]) {
-  // TODO: selectedCellの場所に置き、boardを更新する
+  // selectedCellの場所に置き、boardを更新する
   int x = selectedCell[0], y = selectedCell[1];
   board[x][y] = 0;
   if(isFirst) {
