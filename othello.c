@@ -39,7 +39,7 @@ int main() {
   board[4][4] = White;
   board[3][4] = Black;
   board[4][3] = Black;
-
+  
   // 初期状態の表示
   displayBoard(board);
   
@@ -60,6 +60,7 @@ int main() {
     }
     getEnableCells(isFirst, board, enableCells);
 
+    int selectedCell[2] = {-1, -1};
     if(!existEnableCells(enableCells)) {
       if(fillBoard(board)){
         finishGame(board);
@@ -71,27 +72,24 @@ int main() {
       }
       // passの処理
       printf("passed \n");
-      isAI = !isAI;
-      isFirst = !isFirst;
-    }
-
-    int selectedCell[2] = {-1, -1};
-    if(isAI){
-      printf("AI phase\n");
-      selectByAI(selectedCell, enableCells); 
     } else {
-      printf("human phase\n");
-      inputCell(selectedCell);
-      //printf("select: %d, %d\n", selectedCell[0], selectedCell[1]);
-      if (!canPut(selectedCell, enableCells)) { 
-        // 置けない場所を選択していたらisAIフラグを変えずにもう一回ループしてもらう
-        printf("そこは置けません\n");
-        selectedCell[0] = -1;
-        selectedCell[1] = -1;
-        // 二回flagを変えて元のflagに戻している
-        isAI = !isAI;
-        isFirst = !isFirst;
-      } 
+      if(isAI){
+        printf("AI phase\n");
+        selectByAI(selectedCell, enableCells); 
+      } else {
+        printf("human phase\n");
+        inputCell(selectedCell);
+        //printf("select: %d, %d\n", selectedCell[0], selectedCell[1]);
+        if (!canPut(selectedCell, enableCells)) { 
+          // 置けない場所を選択していたらisAIフラグを変えずにもう一回ループしてもらう
+          printf("そこは置けません\n");
+          selectedCell[0] = -1;
+          selectedCell[1] = -1;
+          // 二回flagを変えて元のflagに戻している
+          isAI = !isAI;
+          isFirst = !isFirst;
+        } 
+      }
     }
 
     reverse(isFirst, selectedCell, board);
@@ -120,6 +118,8 @@ void getEnableCells(bool isFirst, Cell board[HIGHT][WIDTH], bool enableCells[WID
 }
 
 bool canPutLine(bool isFirst, int selectedCell[2], int directionIndex, Cell board[HIGHT][WIDTH]) {
+  int x = selectedCell[0];
+  int y = selectedCell[1];
   return canPutLineIter(isFirst, selectedCell, directionIndex, board, false);
 }
 
@@ -158,7 +158,7 @@ bool canPutLineIter(bool isFirst, int selectedCell[2], int directionIndex, Cell 
     // 挟んだとき
     return true;
   }
-  return canPutLineIter(isFirst, tmp, directionIndex, board, false);
+  return canPutLineIter(isFirst, tmp, directionIndex, board, true);
 }
 
 void add(int target[2], int a[2]) {
@@ -184,7 +184,7 @@ bool fillBoard(Cell board[HIGHT][WIDTH]) {
   // ボードが埋まっていたらtrue
   for (int y=0; y < HIGHT; y++) {
     for(int x=0; x < WIDTH ; x++) {
-      if (board[x][y] != Blank)
+      if (board[x][y] == Blank)
         return false;
     }
   }
@@ -314,7 +314,7 @@ void displayBoard(Cell board[HIGHT][WIDTH]) {
     for(int x=0; x < WIDTH ; x++) {
       switch (board[x][y]) {
         case Black:
-          printf("● ");
+          printf("× ");
           break;
         case White:
           printf("◯ ");
@@ -345,3 +345,4 @@ void selectByAI(int selectedCell[2], bool enableCells[WIDTH][HIGHT]) {
     }
   }
 }
+
