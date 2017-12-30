@@ -25,6 +25,7 @@ void reverse(bool, int[2], Cell[HIGHT][WIDTH]);
 void reverseIter(bool, int[2], int, Cell[WIDTH][HIGHT]);
 void displayBoard(Cell[HIGHT][WIDTH]);
 Cell getStoneColor(bool);
+void selectByAI(int[2], bool[WIDTH][HIGHT]);
 
 int main() {
   // ボードの初期状態
@@ -48,8 +49,6 @@ int main() {
   if(isFirst) {
     isAI = false;
   }
-  printf("isFirst: %d\n",isFirst);
-  printf("isAI: %d\n",isAI);
 
   while(true) {
     bool enableCells[WIDTH][HIGHT];
@@ -71,6 +70,7 @@ int main() {
         return 0;
       }
       // passの処理
+      printf("passed \n");
       isAI = !isAI;
       isFirst = !isFirst;
     }
@@ -78,25 +78,26 @@ int main() {
     int selectedCell[2] = {-1, -1};
     if(isAI){
       printf("AI phase\n");
-      //sucanPutLineIteriAlcanPutLineIterrithm();
+      selectByAI(selectedCell, enableCells); 
     } else {
       printf("human phase\n");
       inputCell(selectedCell);
       //printf("select: %d, %d\n", selectedCell[0], selectedCell[1]);
-      if (!canPut(selectedCell, enableCells)) { // 置けない場所を選択していたらisAIフラグを変えずにもう一回ループしてもらう
-        isAI = !isAI;
-        isFirst = !isFirst;
-      } else {
+      if (!canPut(selectedCell, enableCells)) { 
+        // 置けない場所を選択していたらisAIフラグを変えずにもう一回ループしてもらう
         printf("そこは置けません\n");
         selectedCell[0] = -1;
         selectedCell[1] = -1;
-      }
+        // 二回flagを変えて元のflagに戻している
+        isAI = !isAI;
+        isFirst = !isFirst;
+      } 
     }
 
     reverse(isFirst, selectedCell, board);
+    displayBoard(board);
     isAI = !isAI;
     isFirst = !isFirst;
-    displayBoard(board);
   }
 
   return 0;
@@ -108,8 +109,9 @@ void getEnableCells(bool isFirst, Cell board[HIGHT][WIDTH], bool enableCells[WID
     for (int y=0; y<HIGHT; y++) {
       int selectedCell[2] = {x, y};
       for(int i=0; i<8; i++) {
-        if (canPutLine(isFirst, selectedCell, i, board)) {
-          printf("(%d, %c) ", y+1, (x - 1) + 'a');
+        if (board[x][y] == Blank 
+            && canPutLine(isFirst, selectedCell, i, board)) {
+          printf("(%d, %c) ", y+1, x + 'a');
           enableCells[x][y] = true;
         }
       } 
@@ -136,22 +138,23 @@ bool canPutLineIter(bool isFirst, int selectedCell[2], int directionIndex, Cell 
   int tmp[2] = {selectedCell[0], selectedCell[1]};
   add(tmp, directions[directionIndex]);
   
+  Cell myColor = getStoneColor(isFirst);
   if (tmp[0] <= -1 || tmp[1] <= -1 || tmp[0] > WIDTH || tmp[1] > HIGHT) {
     // 端まで行った 
     return false;
   } else if (board[tmp[0]][tmp[1]] == Blank) {
     // 横がBlank
     return false;
-  }
+  }  
   // printf("%d, %d\n", tmp[0], tmp[1]);
 
-  if (board[tmp[0]][tmp[1]] != isFirst && !flag) {
+  if (board[tmp[0]][tmp[1]] != myColor && !flag) {
     // 置けているとき
     return canPutLineIter(isFirst, tmp, directionIndex, board, true);
-  } else if (board[tmp[0]][tmp[1]] == isFirst && !flag) {
+  } else if (board[tmp[0]][tmp[1]] == myColor && !flag) {
     // 横が同じ色だったとき 
     return false;
-  }  else if (board[tmp[0]][tmp[1]] == isFirst && flag) {
+  }  else if (board[tmp[0]][tmp[1]] == myColor && flag) {
     // 挟んだとき
     return true;
   }
@@ -259,7 +262,6 @@ void inputCell(int selectedCell[2]){
 }
 
 bool canPut(int selectedCell[2], bool enableCells[WIDTH][HIGHT]) {
-  // enableCellsにselectedCellが含まれていたらtrue
   return enableCells[selectedCell[0]][selectedCell[1]];
 }
 
@@ -291,11 +293,11 @@ void reverseIter(bool isFirst, int scanningCell[2], int directionIndex, Cell boa
 
   Cell myColor = getStoneColor(isFirst);
 
-  if (board[x][y] != myColor) {
+  if (board[x][y] == myColor || board[x][y] == Blank) {
     return;
   }
-
-  board[x][y] = myColor; 
+  
+  board[x][y] = myColor;
   reverseIter(isFirst, tmp, directionIndex, board);
 }
 
@@ -331,4 +333,15 @@ Cell getStoneColor(bool isFirst) {
     return Black;
   }
   return White;
+}
+
+void selectByAI(int selectedCell[2], bool enableCells[WIDTH][HIGHT]) {
+  for (int y=0; y < HIGHT; y++) {
+    for(int x=0; x < WIDTH ; x++) {
+      if(enableCells[x][y]) {
+        selectedCell[0] = x;
+        selectedCell[1] = y;
+      }        
+    }
+  }
 }
