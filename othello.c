@@ -6,9 +6,9 @@
 
 // ボードの状態を表すenum
 typedef enum Cell {
-  Blank,
-  Black,
-  White,
+  Blank = 0,
+  Black = 1,
+  White =-1,
 } Cell;
 
 void getEnableCells(bool, Cell[HIGHT][WIDTH], bool[HIGHT][WIDTH]);
@@ -25,7 +25,9 @@ void reverse(bool, int[2], Cell[HIGHT][WIDTH]);
 void reverseIter(bool, int[2], int, Cell[WIDTH][HIGHT]);
 void displayBoard(Cell[HIGHT][WIDTH]);
 Cell getStoneColor(bool);
-void selectByAI(int[2], bool[WIDTH][HIGHT]);
+void selectByAI(int[2], bool[WIDTH][HIGHT], Cell[HIGHT][WIDTH]);
+int eval(Cell[HIGHT][WIDTH]);
+int maxlevel(int, Cell[HIGHT][WIDTH], bool[HIGHT][WIDTH]);
 
 int main() {
   // ボードの初期状態
@@ -75,7 +77,7 @@ int main() {
     } else {
       if(isAI){
         printf("AI phase\n");
-        selectByAI(selectedCell, enableCells); 
+        selectByAI(selectedCell, enableCells, board); 
       } else {
         printf("human phase\n");
         inputCell(selectedCell);
@@ -232,8 +234,8 @@ bool isOneColor(Cell board[HIGHT][WIDTH]) {
           return false;
         }
       }
-    if(y == HIGHT-1 && x == WIDTH-1)
-      return true;
+      if(y == HIGHT-1 && x == WIDTH-1)
+        return true;
     }
   }
 }
@@ -335,14 +337,155 @@ Cell getStoneColor(bool isFirst) {
   return White;
 }
 
-void selectByAI(int selectedCell[2], bool enableCells[WIDTH][HIGHT]) {
-  for (int y=0; y < HIGHT; y++) {
-    for(int x=0; x < WIDTH ; x++) {
-      if(enableCells[x][y]) {
-        selectedCell[0] = x;
-        selectedCell[1] = y;
-      }        
-    }
-  }
+//AI by Ohata
+void selectByAI(int selectedCell[2], bool enableCells[WIDTH][HIGHT], Cell board[HIGHT][WIDTH]) {
+	int selectedNum = maxlevel(1,board,enableCells);
+	selectedCell[0] = selectedNum/10;
+	selectedCell[1] = selectedNum%10;
+	printf("評価値：%d\n", eval(board));
 }
+
+//minimax法 by Ohata
+int maxlevel(int limit, Cell board[HIGHT][WIDTH], bool enableCells[HIGHT][WIDTH]){
+	int max_eval;
+	int selected[2] = {2, 4};
+	bool isFirst;
+	if(limit == 1){ //自分の手を考える
+		max_eval = 1000;
+		for(int y=0;y<8;y++){
+			for(int x=0;x<8;x++){
+				if(enableCells[x][y]){
+					Cell copyBoard[HIGHT][WIDTH];
+					int thinkSelectedCell[2] = {x,y};
+					for(int a=0;a<8;a++){
+						for(int b=0;b<8;b++){
+							copyBoard[a][b] = board[a][b];
+						}
+					}
+					isFirst = false;
+					reverse(isFirst,thinkSelectedCell, copyBoard); //次の手を打つ
+					bool copyEnableCells[8][8];
+					for(int x=0;x<8;x++){
+						for(int y=0;y<8;y++){
+							copyEnableCells[x][y] = false;
+						}
+					}
+					printf("\n%d,%d",x,y);
+					getEnableCells(!isFirst, copyBoard, copyEnableCells);
+					if(maxlevel(limit-1, copyBoard, copyEnableCells)<max_eval){
+						max_eval = eval(copyBoard);
+						selected[0] = x;
+						selected[1] = y;
+					}
+				}
+			}
+		}
+		return selected[0]*10+selected[1];
+	} else if(limit = 0){ //相手の手を考える
+		max_eval = -1000;
+		for(int y=0;y<8;y++){
+			for(int x=0;x<8;x++){
+				if(enableCells[x][y]){
+					Cell copyBoard[HIGHT][WIDTH];
+					int thinkSelectedCell[2] = {x,y};
+					for(int a=0;a<8;a++){
+						for(int b=0;b<8;b++){
+							copyBoard[a][b] = board[a][b];
+						}
+					}
+					isFirst = true;
+					reverse(isFirst,thinkSelectedCell, copyBoard); //次の手を打つ
+					if(eval(copyBoard)>max_eval){
+						max_eval = eval(copyBoard);
+						selected[0] = x;
+						selected[1] = y;
+					}
+				}
+			}
+		}
+		return max_eval;
+	}
+}
+/*	
+	int thinkSelectedCell[] = new int[2]; //可能な手を一時保存する配列
+	//可能な手を全て生成
+	for(int x=0; x<8; x++){
+		for(int y=0; y<8;y++){
+			if(enableCell[x][y]){
+				int score, score_max;
+				//手を打つ
+				thinkSelectedCell[0]=x;
+				thinkSelectedCell[1]=y;
+				thinkReverse();
+				score = minlevel(limit-1, alpha, beta, board, enableCells); //次の相手の手
+				//手を戻す
+				if(score => beta){
+				//beta値を上回ったら探索終了
+					return score;
+				}
+				if(score > score_max){
+				//良い手が見つかったら
+					score_max = score;
+					alpha = max(alpha, score_max); //α値を更新
+				}
+			}
+		}
+	}
+	return score_max;
+*/
+
+
+/*
+//相手の手を調べる
+int minlevel(int limit, int alpha, int beta, Cell board[HIGHT][WIDTH], boolean enableCells[HIGHT][WIDTH]){
+	if(limit == 0){
+		return eval(board);
+	}
+	//可能な手を全て生成
+	for(int x=0; x<8; x++){
+		for(int y=0; y<8; y++){
+			if(enableCells[x][y]){
+				int score, score_min;
+				//手を打つ
+				score = maxlevel(limit-1, alpha, beta, board, enavleCells); //次の自分の手
+				//手を戻す
+				if(score <= alpha){
+					alpha値を上回ったら探索中止
+					return score;
+				}
+				if(score < score_min){
+				//より悪い手(相手にとって良い手)が見つかった
+					score_min = score;
+					beta = min(beta, score_min); //β値を更新 
+				}
+			}
+		}
+	}
+	return score_min;
+}
+*/
+
+//石の位置による評価値 by Ohata
+int val_table[8][8] = {
+	{120, -20,  20,   5,   5,  20,  -20, 120},
+	{-20, -40,  -5,  -5,  -5,  -5,  -40, -20},
+	{ 20,  -5,  15,   3,   3,  15,   -5,  20},
+	{  5,  -5,   3,   3,   3,   3,   -5,   5},
+	{  5,  -5,   3,   3,   3,   3,   -5,   5},
+	{ 20,  -5,  15,   3,   3,  15,   -5,  20},
+	{-20, -40,  -5,  -5,  -5,  -5,  -40, -20},
+	{120, -20,  20,   5,   5,  20,  -20, 120}
+};
+
+//評価値を返す関数 by Ohata
+int eval(Cell board[HIGHT][WIDTH]){
+	int i,j,val=0;
+	for(i=0; i<8; i++){
+		for(j=0; j<8; j++){
+			val += val_table[i][j] * board[i][j]; 
+		}
+	}
+	return val;
+}
+
 
